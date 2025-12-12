@@ -1,0 +1,136 @@
+<div class="admin-page">
+    <div class="settings-grid">
+        <div class="settings-main">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🌐 Site Ayarları</h3>
+                </div>
+                <div class="card-body">
+                    <form class="admin-form">
+                        <div class="form-group">
+                            <label>Site Adı</label>
+                            <input type="text" value="Bilemezsin">
+                        </div>
+                        <div class="form-group">
+                            <label>Site URL</label>
+                            <input type="url" value="https://bilemedin.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Site Açıklaması</label>
+                            <textarea rows="3">Türkiye'nin en eğlenceli tahmin platformu</textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">💰 bi! Coin Ayarları</h3>
+                </div>
+                <div class="card-body">
+                    <form class="admin-form">
+                        <div class="form-group">
+                            <label>Yeni Kayıt Bonusu</label>
+                            <input type="number" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label>Günlük Giriş Bonusu</label>
+                            <input type="number" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Minimum Tahmin Ödülü</label>
+                            <input type="number" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Maksimum Tahmin Ödülü</label>
+                            <input type="number" value="1000">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📧 E-posta Ayarları</h3>
+                </div>
+                <div class="card-body">
+                    <form class="admin-form">
+                        <div class="form-group">
+                            <label>SMTP Sunucu</label>
+                            <input type="text" placeholder="smtp.example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Port</label>
+                            <input type="number" placeholder="587">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Kullanıcı</label>
+                            <input type="text" placeholder="user@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP Şifre</label>
+                            <input type="password" placeholder="••••••••">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🔧 Sistem Bilgisi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="system-info">
+                        <div class="info-row">
+                            <span>Node.js</span>
+                            <span><%= process.version %></span>
+                        </div>
+                        <div class="info-row">
+                            <span>Platform</span>
+                            <span><%= process.platform %></span>
+                        </div>
+                        <div class="info-row">
+                            <span>Ortam</span>
+                            <span><%= process.env.NODE_ENV || 'development' %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🛠️ Bakım Modu</h3>
+                </div>
+                <div class="card-body">
+                    <p>Bakım modunu aktif ederek siteye geçici olarak erişimi kapatabilirsiniz.</p>
+                    <label class="toggle-large">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Bakım Modu</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card danger-zone">
+                <div class="card-header">
+                    <h3 class="card-title">⚠️ Tehlikeli İşlemler</h3>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-outline-danger btn-block">Önbelleği Temizle</button>
+                    <button class="btn btn-outline-danger btn-block">Oturumları Sonlandır</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

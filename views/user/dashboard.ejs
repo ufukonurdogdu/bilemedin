@@ -1,0 +1,278 @@
+<div class="dashboard-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar-large">
+            <% if (user.avatar) { %>
+                <img src="<%= user.avatar %>" alt="<%= user.ad_soyad %>">
+            <% } else { %>
+                <%= user.ad_soyad.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() %>
+            <% } %>
+            <span class="level-indicator"><%= user.seviye %></span>
+        </div>
+
+        <div class="profile-info">
+            <h1 class="profile-name"><%= user.ad_soyad %></h1>
+            <p class="profile-username">@<%= user.kullanici_adi %></p>
+
+            <div class="profile-badges">
+                <% if (user.premium_mi) { %>
+                    <span class="badge premium">👑 Premium</span>
+                <% } %>
+                <% if (user.dogrulanmis_mi) { %>
+                    <span class="badge verified">✓ Onaylı</span>
+                <% } %>
+                <% if (siralama <= 500) { %>
+                    <span class="badge top">🏆 Top <%= siralama <= 100 ? '100' : '500' %></span>
+                <% } %>
+            </div>
+
+            <div class="profile-level-section">
+                <div class="level-header">
+                    <span class="level-title">⭐ Seviye <%= user.seviye %></span>
+                    <span class="level-xp"><%= user.xp.toLocaleString('tr-TR') %> / <%= (user.seviye * 1000).toLocaleString('tr-TR') %> XP</span>
+                </div>
+                <div class="level-progress">
+                    <div class="level-fill" style="width: <%= Math.min((user.xp / (user.seviye * 1000)) * 100, 100) %>%"></div>
+                </div>
+            </div>
+
+            <div class="profile-stats-row">
+                <div class="profile-stat">
+                    <div class="profile-stat-value bi"><%= user.bi_coin.toLocaleString('tr-TR') %></div>
+                    <div class="profile-stat-label">bi! Coin</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value"><%= user.toplam_tahmin %></div>
+                    <div class="profile-stat-label">Tahmin</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value success"><%= user.toplam_tahmin > 0 ? Math.round((user.dogru_tahmin / user.toplam_tahmin) * 100) : 0 %>%</div>
+                    <div class="profile-stat-label">Doğruluk</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value">#<%= siralama %></div>
+                    <div class="profile-stat-label">Sıralama</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value"><%= user.seri %> 🔥</div>
+                    <div class="profile-stat-label">Seri</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a href="/dashboard/profil" class="profile-btn primary">Profili Düzenle</a>
+            <a href="#" class="profile-btn secondary">Arkadaş Davet Et</a>
+        </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Left Column -->
+        <div class="dashboard-left">
+            <!-- Active Predictions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🎯 Aktif Tahminlerim</h3>
+                    <a href="/dashboard/tahminlerim" class="card-link">Tümünü Gör</a>
+                </div>
+                <div class="card-body">
+                    <% if (aktifTahminler && aktifTahminler.length > 0) { %>
+                        <% aktifTahminler.forEach(function(tahmin) { %>
+                            <div class="prediction-item">
+                                <% if (tahmin.gorsel) { %>
+                                    <div class="prediction-image">
+                                        <img src="<%= tahmin.gorsel %>" alt="">
+                                    </div>
+                                <% } %>
+                                <div class="prediction-content">
+                                    <div class="prediction-title"><%= tahmin.baslik %></div>
+                                    <div class="prediction-meta">
+                                        <span class="prediction-choice <%= tahmin.secim %>">
+                                            <%= tahmin.secim === 'evet' ? '✓ EVET' : '✗ HAYIR' %>
+                                        </span>
+                                        <span><%= tahmin.kategori_adi || 'Genel' %></span>
+                                    </div>
+                                </div>
+                                <div class="prediction-status">
+                                    <div class="prediction-reward">+<%= tahmin.bi_odul %> bi!</div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <p>Henüz aktif tahminin yok. <a href="/">Tahmin yapmaya başla!</a></p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Missions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">✅ Görevlerim</h3>
+                    <a href="/dashboard/gorevlerim" class="card-link">Tümünü Gör</a>
+                </div>
+                <div class="card-body">
+                    <% if (gorevler && gorevler.length > 0) { %>
+                        <% gorevler.forEach(function(gorev) { %>
+                            <div class="mission-item">
+                                <div class="mission-icon <%= gorev.tip %>">
+                                    <%= gorev.tip === 'gunluk' ? '🎯' : gorev.tip === 'haftalik' ? '📅' : '⭐' %>
+                                </div>
+                                <div class="mission-content">
+                                    <div class="mission-title"><%= gorev.ad %></div>
+                                    <div class="mission-progress-bar">
+                                        <div class="mission-progress-fill" style="width: <%= Math.min((gorev.ilerleme / gorev.kosul_deger) * 100, 100) %>%"></div>
+                                    </div>
+                                    <div class="mission-progress-text">
+                                        <% if (gorev.tamamlandi_mi) { %>
+                                            ✓ Tamamlandı!
+                                        <% } else { %>
+                                            <%= gorev.ilerleme %> / <%= gorev.kosul_deger %>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <div class="mission-reward">
+                                    <div class="mission-reward-value">+<%= gorev.bi_odul %> bi!</div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <p>Görev bulunamadı.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🏅 Rozetlerim</h3>
+                    <a href="/dashboard/rozetlerim" class="card-link">Tümünü Gör</a>
+                </div>
+                <div class="card-body">
+                    <div class="badges-grid">
+                        <% if (rozetler && rozetler.length > 0) { %>
+                            <% rozetler.forEach(function(rozet) { %>
+                                <div class="badge-item <%= rozet.kazanildi ? '' : 'locked' %>">
+                                    <div class="badge-icon"><%= rozet.kazanildi ? rozet.ikon : '🔒' %></div>
+                                    <div class="badge-name"><%= rozet.ad %></div>
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">📊 Tahmin Geçmişi</h3>
+                    <a href="/dashboard/tahminlerim" class="card-link">Tümünü Gör</a>
+                </div>
+                <div class="card-body">
+                    <% if (gecmis && gecmis.length > 0) { %>
+                        <% gecmis.forEach(function(item) { %>
+                            <div class="history-item">
+                                <div class="history-icon <%= item.dogru_mu ? 'win' : 'lose' %>">
+                                    <%= item.dogru_mu ? '✓' : '✗' %>
+                                </div>
+                                <div class="history-content">
+                                    <div class="history-title"><%= item.baslik %></div>
+                                    <div class="history-date"><%= item.kategori_adi || 'Genel' %></div>
+                                </div>
+                                <div class="history-result">
+                                    <div class="history-points <%= item.dogru_mu ? 'win' : 'lose' %>">
+                                        <%= item.dogru_mu ? '+' + item.kazanilan_bi : '0' %> bi!
+                                    </div>
+                                    <div class="history-status"><%= item.dogru_mu ? 'Kazandın' : 'Kaybettin' %></div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <p>Henüz sonuçlanan tahmin yok.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (Sidebar) -->
+        <div class="dashboard-right">
+            <!-- Wallet Card -->
+            <div class="card wallet-card">
+                <div class="card-header">
+                    <h3 class="card-title">💰 bi! Cüzdanım</h3>
+                </div>
+                <div class="wallet-balance">
+                    <div class="wallet-amount">
+                        <div class="bi-icon">bi!</div>
+                        <%= user.bi_coin.toLocaleString('tr-TR') %>
+                    </div>
+                    <div class="wallet-label">Toplam Bakiye</div>
+                </div>
+                <div class="wallet-actions">
+                    <a href="/dashboard/bi-gecmisi" class="wallet-btn">Geçmiş</a>
+                </div>
+            </div>
+
+            <!-- Rank Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🏆 Sıralama</h3>
+                </div>
+                <div class="rank-card">
+                    <div class="rank-position">#<%= siralama %></div>
+                    <div class="rank-label">Genel Sıralama</div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">🔔 Bildirimler</h3>
+                    <a href="/dashboard/bildirimler" class="card-link">Tümünü Gör</a>
+                </div>
+                <div class="card-body">
+                    <% if (bildirimler && bildirimler.length > 0) { %>
+                        <% bildirimler.forEach(function(bildirim) { %>
+                            <div class="notification-item <%= bildirim.okundu_mu ? '' : 'unread' %>">
+                                <div class="notification-icon">
+                                    <%= bildirim.tip === 'odul' ? '🎉' : bildirim.tip === 'tahmin' ? '🎯' : '📢' %>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-text"><%= bildirim.baslik %></div>
+                                    <div class="notification-time">
+                                        <%= new Date(bildirim.olusturma_tarihi).toLocaleDateString('tr-TR') %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state small">
+                            <p>Bildirim yok</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">⚡ Hızlı Erişim</h3>
+                </div>
+                <div class="card-body">
+                    <div class="quick-links">
+                        <a href="/" class="quick-link">🎯 Tahmin Yap</a>
+                        <a href="/siralama" class="quick-link">🏆 Sıralama</a>
+                        <a href="/dashboard/gorevlerim" class="quick-link">✅ Görevler</a>
+                        <a href="/dashboard/ayarlar" class="quick-link">⚙️ Ayarlar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

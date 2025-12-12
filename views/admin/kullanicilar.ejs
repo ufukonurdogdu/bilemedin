@@ -1,0 +1,95 @@
+<div class="admin-page">
+    <div class="page-actions">
+        <div class="search-filter">
+            <input type="text" placeholder="Kullanıcı ara..." class="search-input" id="searchInput">
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Kullanıcı</th>
+                            <th>E-posta</th>
+                            <th>bi! Coin</th>
+                            <th>Seviye</th>
+                            <th>Rol</th>
+                            <th>Durum</th>
+                            <th>Kayıt</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (kullanicilar && kullanicilar.length > 0) { %>
+                            <% kullanicilar.forEach(function(k) { %>
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar-small">
+                                                <% if (k.avatar) { %>
+                                                    <img src="<%= k.avatar %>" alt="">
+                                                <% } else { %>
+                                                    <%= k.ad_soyad.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() %>
+                                                <% } %>
+                                            </div>
+                                            <div class="user-info-cell">
+                                                <div class="user-name"><%= k.ad_soyad %></div>
+                                                <div class="user-username">@<%= k.kullanici_adi %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><%= k.email %></td>
+                                    <td><%= k.bi_coin.toLocaleString('tr-TR') %></td>
+                                    <td><%= k.seviye %></td>
+                                    <td>
+                                        <span class="role-badge <%= k.rol %>">
+                                            <%= k.rol === 'superadmin' ? 'Süper Admin' : k.rol === 'admin' ? 'Admin' : k.rol === 'moderator' ? 'Moderatör' : 'Kullanıcı' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% if (k.banlandi_mi) { %>
+                                            <span class="status-badge banned">Banlı</span>
+                                        <% } else if (k.premium_mi) { %>
+                                            <span class="status-badge premium">Premium</span>
+                                        <% } else { %>
+                                            <span class="status-badge active">Aktif</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= new Date(k.olusturma_tarihi).toLocaleDateString('tr-TR') %></td>
+                                    <td>
+                                        <a href="/admin/kullanicilar/<%= k.id %>" class="btn btn-sm btn-secondary">Detay</a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="8" class="text-center">Kullanıcı bulunamadı</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <a href="/admin/kullanicilar?sayfa=<%= i %>" class="page-link <%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#usersTable tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+</script>

@@ -1,0 +1,16 @@
+<div class="auth-form-container">
+    <h2 class="auth-title">Şifremi Unuttum</h2>
+    <p class="auth-subtitle">E-posta adresini gir, şifre sıfırlama bağlantısı gönderelim</p>
+
+    <form action="/auth/sifremi-unuttum" method="POST" class="auth-form">
+        <div class="form-group">
+            <label for="email">E-posta</label>
+            <input type="email" id="email" name="email" placeholder="ornek@email.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sıfırlama Bağlantısı Gönder</button>
+    </form>
+
+    <p class="auth-footer">
+        <a href="/auth/giris">← Giriş sayfasına dön</a>
+    </p>
+</div>

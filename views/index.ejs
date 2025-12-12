@@ -1,0 +1,150 @@
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>Tahmin Et, Kazan, Eğlen!</h1>
+        <p>Güncel olaylar hakkında tahminlerini paylaş, bi! coin kazan, ödüller kazan!</p>
+        <div class="hero-buttons">
+            <% if (!user) { %>
+                <a href="/auth/kayit" class="btn btn-primary btn-lg">Hemen Başla</a>
+                <a href="/auth/giris" class="btn btn-secondary btn-lg">Giriş Yap</a>
+            <% } else { %>
+                <a href="/dashboard" class="btn btn-primary btn-lg">Dashboard'a Git</a>
+            <% } %>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-value">10K+</span>
+                <span class="stat-label">Kullanıcı</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">500+</span>
+                <span class="stat-label">Tahmin</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">1M+</span>
+                <span class="stat-label">bi! Dağıtıldı</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% if (typeof kategoriler !== 'undefined' && kategoriler.length > 0) { %>
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Kategoriler</h2>
+        <div class="categories-grid">
+            <% kategoriler.forEach(function(kategori) { %>
+                <a href="/?kategori=<%= kategori.slug %>" class="category-card" style="--cat-color: <%= kategori.renk %>">
+                    <span class="category-icon"><%= kategori.ikon %></span>
+                    <span class="category-name"><%= kategori.ad %></span>
+                </a>
+            <% }); %>
+        </div>
+    </div>
+</section>
+<% } %>
+
+<section class="predictions-section">
+    <div class="container">
+        <h2 class="section-title">Güncel Tahminler</h2>
+        
+        <% if (typeof tahminler !== 'undefined' && tahminler.length > 0) { %>
+            <div class="predictions-grid">
+                <% tahminler.forEach(function(tahmin) { %>
+                    <div class="prediction-card">
+                        <% if (tahmin.gorsel) { %>
+                            <div class="prediction-image">
+                                <img src="<%= tahmin.gorsel %>" alt="<%= tahmin.baslik %>">
+                                <span class="category-badge" style="background: <%= tahmin.kategori_renk || '#6366f1' %>">
+                                    <%= tahmin.kategori_ikon || '🎯' %> <%= tahmin.kategori_adi || 'Genel' %>
+                                </span>
+                            </div>
+                        <% } %>
+                        <div class="prediction-content">
+                            <h3 class="prediction-title"><%= tahmin.baslik %></h3>
+                            <div class="prediction-odds">
+                                <div class="odds-bar">
+                                    <div class="odds-yes" style="width: <%= tahmin.evet_orani %>%"></div>
+                                    <div class="odds-no" style="width: <%= tahmin.hayir_orani %>%"></div>
+                                </div>
+                                <div class="odds-labels">
+                                    <span class="yes-label">Evet %<%= tahmin.evet_orani %></span>
+                                    <span class="no-label">Hayır %<%= tahmin.hayir_orani %></span>
+                                </div>
+                            </div>
+                            <div class="prediction-footer">
+                                <span class="participants"><%= tahmin.katilim_sayisi %> katılım</span>
+                                <span class="reward"><%= tahmin.bi_odul %> bi!</span>
+                            </div>
+                            <div class="prediction-actions">
+                                <button class="btn btn-yes" onclick="tahminYap(<%= tahmin.id %>, 'evet')">EVET</button>
+                                <button class="btn btn-no" onclick="tahminYap(<%= tahmin.id %>, 'hayir')">HAYIR</button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <p>Henüz aktif tahmin bulunmuyor.</p>
+            </div>
+        <% } %>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Nasıl Çalışır?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Tahmin Yap</h3>
+                <p>Güncel olaylar hakkında evet veya hayır tahmini yap</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>bi! Kazan</h3>
+                <p>Doğru tahminlerle bi! coin kazan</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h3>Sıralamada Yüksel</h3>
+                <p>En çok bi! coin'e sahip olanlara ödüller</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎁</div>
+                <h3>Ödül Kazan</h3>
+                <p>bi! coin'lerini ödüllere dönüştür</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+async function tahminYap(tahminId, secim) {
+    <% if (!user) { %>
+        window.location.href = '/auth/giris';
+        return;
+    <% } %>
+    
+    try {
+        const response = await fetch(`/api/tahminler/${tahminId}/tahmin-yap`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ secim })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Tahminin kaydedildi!');
+            location.reload();
+        } else {
+            alert(data.message || 'Bir hata oluştu');
+        }
+    } catch (err) {
+        alert('Bir hata oluştu');
+    }
+}
+</script>

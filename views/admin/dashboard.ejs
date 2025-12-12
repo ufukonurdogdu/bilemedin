@@ -1,0 +1,156 @@
+<div class="admin-dashboard">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon users">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.toplamKullanici.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Toplam Kullanıcı</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.aktifKullanici.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Aktif Kullanıcı (24s)</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon predictions">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.aktifTahmin.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Aktif Tahmin</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon coins">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M8 10h8"/></svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.toplamBiCoin.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Toplam bi! Coin</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dashboard-main-grid">
+        <!-- Recent Predictions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Son Tahminler</h3>
+                <a href="/admin/tahminler" class="card-link">Tümünü Gör</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Başlık</th>
+                                <th>Kategori</th>
+                                <th>Durum</th>
+                                <th>Katılım</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (sonTahminler && sonTahminler.length > 0) { %>
+                                <% sonTahminler.forEach(function(tahmin) { %>
+                                    <tr>
+                                        <td><%= tahmin.baslik.substring(0, 40) %><%= tahmin.baslik.length > 40 ? '...' : '' %></td>
+                                        <td><%= tahmin.kategori_adi || 'Genel' %></td>
+                                        <td>
+                                            <span class="status-badge <%= tahmin.durum %>">
+                                                <%= tahmin.durum === 'aktif' ? 'Aktif' : tahmin.durum === 'sonuclandi' ? 'Sonuçlandı' : tahmin.durum %>
+                                            </span>
+                                        </td>
+                                        <td><%= tahmin.katilim_sayisi %></td>
+                                        <td>
+                                            <a href="/admin/tahminler/<%= tahmin.id %>/duzenle" class="btn btn-sm btn-secondary">Düzenle</a>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="5" class="text-center">Henüz tahmin yok</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Son Aktiviteler</h3>
+            </div>
+            <div class="card-body">
+                <div class="activity-feed">
+                    <% if (aktiviteler && aktiviteler.length > 0) { %>
+                        <% aktiviteler.forEach(function(aktivite) { %>
+                            <div class="activity-item">
+                                <div class="activity-icon <%= aktivite.tip %>">
+                                    <%= aktivite.tip === 'kullanici' ? '👤' : '🎯' %>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-text">
+                                        <strong><%= aktivite.baslik %></strong> - <%= aktivite.aciklama %>
+                                    </div>
+                                    <div class="activity-time">
+                                        <%= new Date(aktivite.olusturma_tarihi).toLocaleString('tr-TR') %>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state small">
+                            <p>Henüz aktivite yok</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Hızlı İşlemler</h3>
+        </div>
+        <div class="card-body">
+            <div class="quick-actions">
+                <a href="/admin/tahminler/yeni" class="quick-action-btn">
+                    <span class="action-icon">➕</span>
+                    <span>Yeni Tahmin</span>
+                </a>
+                <a href="/admin/kullanicilar" class="quick-action-btn">
+                    <span class="action-icon">👥</span>
+                    <span>Kullanıcılar</span>
+                </a>
+                <a href="/admin/kategoriler" class="quick-action-btn">
+                    <span class="action-icon">📂</span>
+                    <span>Kategoriler</span>
+                </a>
+                <a href="/admin/reklamlar" class="quick-action-btn">
+                    <span class="action-icon">📢</span>
+                    <span>Reklamlar</span>
+                </a>
+                <a href="/admin/ayarlar" class="quick-action-btn">
+                    <span class="action-icon">⚙️</span>
+                    <span>Ayarlar</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

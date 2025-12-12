@@ -1,0 +1,108 @@
+<div class="admin-page">
+    <div class="page-actions">
+        <div class="filter-tabs">
+            <a href="/admin/tahminler?durum=aktif" class="filter-tab <%= currentDurum === 'aktif' ? 'active' : '' %>">Aktif</a>
+            <a href="/admin/tahminler?durum=beklemede" class="filter-tab <%= currentDurum === 'beklemede' ? 'active' : '' %>">Beklemede</a>
+            <a href="/admin/tahminler?durum=sonuclandi" class="filter-tab <%= currentDurum === 'sonuclandi' ? 'active' : '' %>">Sonuçlandı</a>
+            <a href="/admin/tahminler?durum=iptal" class="filter-tab <%= currentDurum === 'iptal' ? 'active' : '' %>">İptal</a>
+        </div>
+        <a href="/admin/tahminler/yeni" class="btn btn-primary">+ Yeni Tahmin</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tahmin</th>
+                            <th>Kategori</th>
+                            <th>Oluşturan</th>
+                            <th>Katılım</th>
+                            <th>Evet/Hayır</th>
+                            <th>Ödül</th>
+                            <th>Bitiş</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (tahminler && tahminler.length > 0) { %>
+                            <% tahminler.forEach(function(tahmin) { %>
+                                <tr>
+                                    <td>
+                                        <div class="prediction-cell">
+                                            <% if (tahmin.gorsel) { %>
+                                                <img src="<%= tahmin.gorsel %>" class="prediction-thumb" alt="">
+                                            <% } %>
+                                            <span><%= tahmin.baslik.substring(0, 50) %><%= tahmin.baslik.length > 50 ? '...' : '' %></span>
+                                        </div>
+                                    </td>
+                                    <td><%= tahmin.kategori_adi || 'Genel' %></td>
+                                    <td><%= tahmin.olusturan || 'Sistem' %></td>
+                                    <td><%= tahmin.katilim_sayisi %></td>
+                                    <td>
+                                        <div class="odds-mini">
+                                            <span class="yes">%<%= tahmin.evet_orani %></span>
+                                            <span class="no">%<%= tahmin.hayir_orani %></span>
+                                        </div>
+                                    </td>
+                                    <td><%= tahmin.bi_odul %> bi!</td>
+                                    <td><%= tahmin.bitis_tarihi ? new Date(tahmin.bitis_tarihi).toLocaleDateString('tr-TR') : '-' %></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="/admin/tahminler/<%= tahmin.id %>/duzenle" class="btn btn-sm btn-secondary">Düzenle</a>
+                                            <% if (tahmin.durum === 'aktif') { %>
+                                                <button onclick="sonuclandir(<%= tahmin.id %>)" class="btn btn-sm btn-success">Sonuçlandır</button>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="8" class="text-center">Tahmin bulunamadı</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sonuçlandır Modal -->
+<div id="sonucModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Tahmin Sonuçlandır</h3>
+        <form id="sonucForm" method="POST">
+            <div class="form-group">
+                <label>Doğru Cevap</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="dogru_cevap" value="evet" required>
+                        <span>EVET</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="dogru_cevap" value="hayir" required>
+                        <span>HAYIR</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">İptal</button>
+                <button type="submit" class="btn btn-primary">Sonuçlandır</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function sonuclandir(id) {
+    document.getElementById('sonucForm').action = '/admin/tahminler/' + id + '/sonuclandir';
+    document.getElementById('sonucModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('sonucModal').style.display = 'none';
+}
+</script>

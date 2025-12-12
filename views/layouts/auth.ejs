@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-brand">
+                <a href="/" class="logo">
+                    <div class="logo-icon">B</div>
+                    <span class="logo-text">Bilemezsin</span>
+                </a>
+                <p class="auth-tagline">Tahmin et, kazan, eğlen!</p>
+            </div>
+            <div class="auth-features">
+                <div class="feature-item">
+                    <span class="feature-icon">🎯</span>
+                    <div>
+                        <h4>Tahmin Yap</h4>
+                        <p>Güncel olaylar hakkında tahminlerini paylaş</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">💰</span>
+                    <div>
+                        <h4>bi! Kazan</h4>
+                        <p>Doğru tahminlerle bi! coin kazan</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🏆</span>
+                    <div>
+                        <h4>Yarış</h4>
+                        <p>Sıralamada yüksel, ödüller kazan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="auth-right">
+            <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+                <div class="alert alert-error">
+                    <% errors.forEach(function(error) { %>
+                        <p><%= error.msg %></p>
+                    <% }); %>
+                </div>
+            <% } %>
+            <% if (success_msg && success_msg.length > 0) { %>
+                <div class="alert alert-success">
+                    <%= success_msg %>
+                </div>
+            <% } %>
+            <% if (error_msg && error_msg.length > 0) { %>
+                <div class="alert alert-error">
+                    <%= error_msg %>
+                </div>
+            <% } %>
+            <% if (error && error.length > 0) { %>
+                <div class="alert alert-error">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <%- body %>
+        </div>
+    </div>
+    <script src="/js/main.js"></script>
+</body>
+</html>

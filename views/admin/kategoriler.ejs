@@ -1,0 +1,116 @@
+<div class="admin-page">
+    <div class="page-actions">
+        <button onclick="showAddModal()" class="btn btn-primary">+ Yeni Kategori</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sıra</th>
+                            <th>İkon</th>
+                            <th>Ad</th>
+                            <th>Slug</th>
+                            <th>Renk</th>
+                            <th>Durum</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (kategoriler && kategoriler.length > 0) { %>
+                            <% kategoriler.forEach(function(k) { %>
+                                <tr>
+                                    <td><%= k.sira %></td>
+                                    <td class="category-icon"><%= k.ikon %></td>
+                                    <td><%= k.ad %></td>
+                                    <td><%= k.slug %></td>
+                                    <td>
+                                        <span class="color-preview" style="background: <%= k.renk %>"></span>
+                                        <%= k.renk %>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge <%= k.aktif_mi ? 'active' : 'inactive' %>">
+                                            <%= k.aktif_mi ? 'Aktif' : 'Pasif' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-secondary" onclick="editCategory(<%= JSON.stringify(k).replace(/"/g, '&quot;') %>)">Düzenle</button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7" class="text-center">Kategori bulunamadı</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kategori Modal -->
+<div id="categoryModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3 id="modalTitle">Yeni Kategori</h3>
+        <form id="categoryForm">
+            <div class="form-group">
+                <label>Kategori Adı</label>
+                <input type="text" name="ad" id="catAd" required>
+            </div>
+            <div class="form-group">
+                <label>Slug</label>
+                <input type="text" name="slug" id="catSlug" required>
+            </div>
+            <div class="form-group">
+                <label>İkon (Emoji)</label>
+                <input type="text" name="ikon" id="catIkon" placeholder="⚽" required>
+            </div>
+            <div class="form-group">
+                <label>Renk</label>
+                <input type="color" name="renk" id="catRenk" value="#6366f1">
+            </div>
+            <div class="form-group">
+                <label>Sıra</label>
+                <input type="number" name="sira" id="catSira" value="0">
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">İptal</button>
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAddModal() {
+    document.getElementById('modalTitle').textContent = 'Yeni Kategori';
+    document.getElementById('categoryForm').reset();
+    document.getElementById('categoryModal').style.display = 'flex';
+}
+
+function editCategory(cat) {
+    document.getElementById('modalTitle').textContent = 'Kategori Düzenle';
+    document.getElementById('catAd').value = cat.ad;
+    document.getElementById('catSlug').value = cat.slug;
+    document.getElementById('catIkon').value = cat.ikon;
+    document.getElementById('catRenk').value = cat.renk;
+    document.getElementById('catSira').value = cat.sira;
+    document.getElementById('categoryModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('categoryModal').style.display = 'none';
+}
+
+document.getElementById('catAd').addEventListener('input', function() {
+    const slug = this.value.toLowerCase()
+        .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+        .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+        .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    document.getElementById('catSlug').value = slug;
+});
+</script>

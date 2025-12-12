@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/user.css">
+</head>
+<body>
+    <%- include('../partials/user-navbar') %>
+
+    <% if (success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success">
+            <%= success_msg %>
+        </div>
+    <% } %>
+    <% if (error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-error">
+            <%= error_msg %>
+        </div>
+    <% } %>
+
+    <main class="user-main">
+        <%- body %>
+    </main>
+
+    <script src="/js/user.js"></script>
+</body>
+</html>
