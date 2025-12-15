@@ -1,0 +1,191 @@
+<div class="admin-page">
+    <div class="page-header">
+        <h2>Raporlar</h2>
+    </div>
+
+    <div class="reports-grid">
+        <!-- En Aktif Kullanicilar -->
+        <div class="card">
+            <div class="card-header">
+                <h3>En Aktif Kullanicilar</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Kullanici</th>
+                                <th>Tahmin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (enAktifKullanicilar && enAktifKullanicilar.length > 0) { %>
+                                <% enAktifKullanicilar.forEach(function(k, i) { %>
+                                    <tr>
+                                        <td><%= i + 1 %></td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-sm">
+                                                    <% if (k.avatar) { %>
+                                                        <img src="<%= k.avatar %>" alt="<%= k.ad_soyad %>">
+                                                    <% } else { %>
+                                                        <%= k.ad_soyad.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() %>
+                                                    <% } %>
+                                                </div>
+                                                <span><%= k.ad_soyad %></span>
+                                            </div>
+                                        </td>
+                                        <td><%= k.tahmin_sayisi %></td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="text-center">Veri bulunamadi</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- En Basarili Kullanicilar -->
+        <div class="card">
+            <div class="card-header">
+                <h3>En Basarili Kullanicilar</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Kullanici</th>
+                                <th>Basari</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (enBasariliKullanicilar && enBasariliKullanicilar.length > 0) { %>
+                                <% enBasariliKullanicilar.forEach(function(k, i) { %>
+                                    <tr>
+                                        <td><%= i + 1 %></td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-sm">
+                                                    <% if (k.avatar) { %>
+                                                        <img src="<%= k.avatar %>" alt="<%= k.ad_soyad %>">
+                                                    <% } else { %>
+                                                        <%= k.ad_soyad.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() %>
+                                                    <% } %>
+                                                </div>
+                                                <span><%= k.ad_soyad %></span>
+                                            </div>
+                                        </td>
+                                        <td class="success-rate">%<%= k.basari_orani %></td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="text-center">Veri bulunamadi</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- En Populer Tahminler -->
+        <div class="card" style="grid-column: span 2;">
+            <div class="card-header">
+                <h3>En Populer Tahminler</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tahmin</th>
+                                <th>Kategori</th>
+                                <th>Katilim</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (enPopulerTahminler && enPopulerTahminler.length > 0) { %>
+                                <% enPopulerTahminler.forEach(function(t, i) { %>
+                                    <tr>
+                                        <td><%= i + 1 %></td>
+                                        <td><%= t.baslik %></td>
+                                        <td><%= t.kategori_adi || '-' %></td>
+                                        <td><%= t.katilim %> kisi</td>
+                                        <td>
+                                            <span class="status-badge <%= t.durum === 'aktif' ? 'active' : 'inactive' %>">
+                                                <%= t.durum %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="5" class="text-center">Veri bulunamadi</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    overflow: hidden;
+}
+
+.user-avatar-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.success-rate {
+    color: var(--success);
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reports-grid .card[style*="grid-column"] {
+        grid-column: span 1;
+    }
+}
+</style>

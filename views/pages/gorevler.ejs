@@ -1,0 +1,178 @@
+<div class="page-container">
+    <div class="page-header-section">
+        <h1>Gorevler</h1>
+        <p>Gorevleri tamamla, bi! kazan!</p>
+    </div>
+
+    <% if (!user) { %>
+        <div class="login-prompt">
+            <p>Gorevlerinizi takip etmek icin giris yapin</p>
+            <a href="/auth/giris" class="btn btn-primary">Giris Yap</a>
+        </div>
+    <% } %>
+
+    <div class="tasks-container">
+        <!-- Gunluk Gorevler -->
+        <div class="task-section">
+            <h2>📅 Gunluk Gorevler</h2>
+            <div class="tasks-list">
+                <% const gunlukGorevler = gorevler.filter(g => g.tip === 'gunluk'); %>
+                <% if (gunlukGorevler.length > 0) { %>
+                    <% gunlukGorevler.forEach(function(g) { %>
+                        <div class="task-card">
+                            <div class="task-info">
+                                <h3><%= g.ad %></h3>
+                                <% if (g.aciklama) { %>
+                                    <p><%= g.aciklama %></p>
+                                <% } %>
+                            </div>
+                            <div class="task-rewards">
+                                <span class="reward bi-reward"><%= g.bi_odul %> bi!</span>
+                                <span class="reward xp-reward"><%= g.xp_odul %> XP</span>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p class="no-tasks">Gunluk gorev bulunamadi</p>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Haftalik Gorevler -->
+        <div class="task-section">
+            <h2>📆 Haftalik Gorevler</h2>
+            <div class="tasks-list">
+                <% const haftalikGorevler = gorevler.filter(g => g.tip === 'haftalik'); %>
+                <% if (haftalikGorevler.length > 0) { %>
+                    <% haftalikGorevler.forEach(function(g) { %>
+                        <div class="task-card">
+                            <div class="task-info">
+                                <h3><%= g.ad %></h3>
+                                <% if (g.aciklama) { %>
+                                    <p><%= g.aciklama %></p>
+                                <% } %>
+                            </div>
+                            <div class="task-rewards">
+                                <span class="reward bi-reward"><%= g.bi_odul %> bi!</span>
+                                <span class="reward xp-reward"><%= g.xp_odul %> XP</span>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p class="no-tasks">Haftalik gorev bulunamadi</p>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Ozel Gorevler -->
+        <div class="task-section">
+            <h2>⭐ Ozel Gorevler</h2>
+            <div class="tasks-list">
+                <% const ozelGorevler = gorevler.filter(g => g.tip === 'ozel'); %>
+                <% if (ozelGorevler.length > 0) { %>
+                    <% ozelGorevler.forEach(function(g) { %>
+                        <div class="task-card special">
+                            <div class="task-info">
+                                <h3><%= g.ad %></h3>
+                                <% if (g.aciklama) { %>
+                                    <p><%= g.aciklama %></p>
+                                <% } %>
+                            </div>
+                            <div class="task-rewards">
+                                <span class="reward bi-reward"><%= g.bi_odul %> bi!</span>
+                                <span class="reward xp-reward"><%= g.xp_odul %> XP</span>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p class="no-tasks">Ozel gorev bulunamadi</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-prompt {
+    text-align: center;
+    padding: 32px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin-bottom: 32px;
+}
+
+.login-prompt p {
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+}
+
+.tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.task-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 16px;
+}
+
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.task-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.task-card.special {
+    border: 2px solid var(--warning);
+    background: linear-gradient(135deg, var(--bg-card), rgba(245, 158, 11, 0.1));
+}
+
+.task-info h3 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.task-info p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.task-rewards {
+    display: flex;
+    gap: 12px;
+}
+
+.reward {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.bi-reward {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+}
+
+.xp-reward {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.no-tasks {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+}
+</style>

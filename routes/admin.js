@@ -357,4 +357,257 @@ router.get('/ayarlar', ensureAdmin, (req, res) => {
     });
 });
 
+// Görevler Yönetimi
+router.get('/gorevler', ensureAdmin, async (req, res) => {
+    try {
+        const gorevler = await db.getAll('SELECT * FROM gorevler ORDER BY tip, id');
+
+        res.render('admin/gorevler', {
+            title: 'Görevler - Admin',
+            layout: 'layouts/admin',
+            gorevler
+        });
+    } catch (err) {
+        console.error('Görevler hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin');
+    }
+});
+
+// Yeni Görev Ekle
+router.post('/gorevler/yeni', ensureAdmin, async (req, res) => {
+    try {
+        const { ad, aciklama, tip, kosul_tip, kosul_deger, bi_odul, xp_odul } = req.body;
+
+        await db.insert(`
+            INSERT INTO gorevler (ad, aciklama, tip, kosul_tip, kosul_deger, bi_odul, xp_odul)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [ad, aciklama, tip, kosul_tip, kosul_deger, bi_odul || 100, xp_odul || 50]);
+
+        req.flash('success_msg', 'Görev eklendi');
+        res.redirect('/admin/gorevler');
+    } catch (err) {
+        console.error('Görev ekleme hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin/gorevler');
+    }
+});
+
+// Görev Sil
+router.post('/gorevler/:id/sil', ensureAdmin, async (req, res) => {
+    try {
+        await db.execute('DELETE FROM gorevler WHERE id = ?', [req.params.id]);
+        req.flash('success_msg', 'Görev silindi');
+        res.redirect('/admin/gorevler');
+    } catch (err) {
+        console.error('Görev silme hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin/gorevler');
+    }
+});
+
+// Mağaza Yönetimi
+router.get('/magaza', ensureAdmin, async (req, res) => {
+    try {
+        const urunler = await db.getAll('SELECT * FROM magaza_urunleri ORDER BY olusturma_tarihi DESC');
+
+        res.render('admin/magaza', {
+            title: 'Mağaza - Admin',
+            layout: 'layouts/admin',
+            urunler
+        });
+    } catch (err) {
+        console.error('Mağaza hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin');
+    }
+});
+
+// Yeni Ürün Ekle
+router.post('/magaza/yeni', ensureAdmin, async (req, res) => {
+    try {
+        const { ad, aciklama, gorsel, tip, fiyat_bi, stok } = req.body;
+
+        await db.insert(`
+            INSERT INTO magaza_urunleri (ad, aciklama, gorsel, tip, fiyat_bi, stok)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `, [ad, aciklama, gorsel, tip, fiyat_bi, stok || -1]);
+
+        req.flash('success_msg', 'Ürün eklendi');
+        res.redirect('/admin/magaza');
+    } catch (err) {
+        console.error('Ürün ekleme hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin/magaza');
+    }
+});
+
+// Ürün Sil
+router.post('/magaza/:id/sil', ensureAdmin, async (req, res) => {
+    try {
+        await db.execute('DELETE FROM magaza_urunleri WHERE id = ?', [req.params.id]);
+        req.flash('success_msg', 'Ürün silindi');
+        res.redirect('/admin/magaza');
+    } catch (err) {
+        console.error('Ürün silme hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin/magaza');
+    }
+});
+
+// Bildirimler Yönetimi
+router.get('/bildirimler', ensureAdmin, async (req, res) => {
+    try {
+        const bildirimler = await db.getAll(`
+            SELECT b.*, k.ad_soyad as kullanici_adi
+            FROM bildirimler b
+            LEFT JOIN kullanicilar k ON b.kullanici_id = k.id
+            ORDER BY b.olusturma_tarihi DESC
+            LIMIT 100
+        `);
+
+        res.render('admin/bildirimler', {
+            title: 'Bildirimler - Admin',
+            layout: 'layouts/admin',
+            bildirimler
+        });
+    } catch (err) {
+        console.error('Bildirimler hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin');
+    }
+});
+
+// Toplu Bildirim Gönder
+router.post('/bildirimler/gonder', ensureAdmin, async (req, res) => {
+    try {
+        const { baslik, mesaj, tip } = req.body;
+
+        // Tüm kullanıcılara bildirim gönder
+        const kullanicilar = await db.getAll('SELECT id FROM kullanicilar WHERE banlandi_mi = 0');
+
+        for (const kullanici of kullanicilar) {
+            await db.insert(`
+                INSERT INTO bildirimler (kullanici_id, baslik, mesaj, tip)
+                VALUES (?, ?, ?, ?)
+            `, [kullanici.id, baslik, mesaj, tip || 'sistem']);
+
+            // Socket.io ile anlık bildirim gönder
+            if (global.emitNotification) {
+                global.emitNotification(kullanici.id, { message: baslik, type: 'info' });
+            }
+        }
+
+        req.flash('success_msg', `${kullanicilar.length} kullanıcıya bildirim gönderildi`);
+        res.redirect('/admin/bildirimler');
+    } catch (err) {
+        console.error('Bildirim gönderme hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin/bildirimler');
+    }
+});
+
+// İstatistikler
+router.get('/istatistikler', ensureAdmin, async (req, res) => {
+    try {
+        const stats = {};
+
+        // Genel istatistikler
+        stats.toplamKullanici = (await db.getOne('SELECT COUNT(*) as total FROM kullanicilar'))?.total || 0;
+        stats.aktifKullanici = (await db.getOne('SELECT COUNT(*) as total FROM kullanicilar WHERE son_giris >= DATE_SUB(NOW(), INTERVAL 7 DAY)'))?.total || 0;
+        stats.toplamTahmin = (await db.getOne('SELECT COUNT(*) as total FROM tahminler'))?.total || 0;
+        stats.aktifTahmin = (await db.getOne('SELECT COUNT(*) as total FROM tahminler WHERE durum = "aktif"'))?.total || 0;
+        stats.toplamKatilim = (await db.getOne('SELECT COUNT(*) as total FROM kullanici_tahminleri'))?.total || 0;
+        stats.toplamBiCoin = (await db.getOne('SELECT SUM(bi_coin) as total FROM kullanicilar'))?.total || 0;
+
+        // Son 7 günlük kayıtlar
+        const kayitlar = await db.getAll(`
+            SELECT DATE(olusturma_tarihi) as tarih, COUNT(*) as sayi
+            FROM kullanicilar
+            WHERE olusturma_tarihi >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            GROUP BY DATE(olusturma_tarihi)
+            ORDER BY tarih
+        `);
+
+        // Son 7 günlük tahminler
+        const tahminKatilimlari = await db.getAll(`
+            SELECT DATE(olusturma_tarihi) as tarih, COUNT(*) as sayi
+            FROM kullanici_tahminleri
+            WHERE olusturma_tarihi >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            GROUP BY DATE(olusturma_tarihi)
+            ORDER BY tarih
+        `);
+
+        // Kategori dağılımı
+        const kategoriDagilimi = await db.getAll(`
+            SELECT k.ad, COUNT(t.id) as tahmin_sayisi
+            FROM kategoriler k
+            LEFT JOIN tahminler t ON k.id = t.kategori_id
+            GROUP BY k.id
+            ORDER BY tahmin_sayisi DESC
+        `);
+
+        res.render('admin/istatistikler', {
+            title: 'İstatistikler - Admin',
+            layout: 'layouts/admin',
+            stats,
+            kayitlar,
+            tahminKatilimlari,
+            kategoriDagilimi
+        });
+    } catch (err) {
+        console.error('İstatistikler hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin');
+    }
+});
+
+// Raporlar
+router.get('/raporlar', ensureAdmin, async (req, res) => {
+    try {
+        // En aktif kullanıcılar
+        const enAktifKullanicilar = await db.getAll(`
+            SELECT k.*, COUNT(kt.id) as tahmin_sayisi
+            FROM kullanicilar k
+            LEFT JOIN kullanici_tahminleri kt ON k.id = kt.kullanici_id
+            GROUP BY k.id
+            ORDER BY tahmin_sayisi DESC
+            LIMIT 10
+        `);
+
+        // En başarılı kullanıcılar
+        const enBasariliKullanicilar = await db.getAll(`
+            SELECT *,
+                   ROUND((dogru_tahmin / NULLIF(toplam_tahmin, 0)) * 100, 1) as basari_orani
+            FROM kullanicilar
+            WHERE toplam_tahmin >= 10
+            ORDER BY basari_orani DESC
+            LIMIT 10
+        `);
+
+        // En popüler tahminler
+        const enPopulerTahminler = await db.getAll(`
+            SELECT t.*, k.ad as kategori_adi, COUNT(kt.id) as katilim
+            FROM tahminler t
+            LEFT JOIN kategoriler k ON t.kategori_id = k.id
+            LEFT JOIN kullanici_tahminleri kt ON t.id = kt.tahmin_id
+            GROUP BY t.id
+            ORDER BY katilim DESC
+            LIMIT 10
+        `);
+
+        res.render('admin/raporlar', {
+            title: 'Raporlar - Admin',
+            layout: 'layouts/admin',
+            enAktifKullanicilar,
+            enBasariliKullanicilar,
+            enPopulerTahminler
+        });
+    } catch (err) {
+        console.error('Raporlar hatası:', err);
+        req.flash('error_msg', 'Bir hata oluştu');
+        res.redirect('/admin');
+    }
+});
+
 module.exports = router;

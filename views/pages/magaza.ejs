@@ -1,0 +1,166 @@
+<div class="page-container">
+    <div class="page-header-section">
+        <h1>bi! Magaza</h1>
+        <p>bi! coinlerinizi harcayarak oduller kazanin</p>
+    </div>
+
+    <% if (user) { %>
+        <div class="user-balance">
+            <div class="bi-icon">bi!</div>
+            <span>Bakiyeniz: <strong><%= user.bi_coin.toLocaleString('tr-TR') %></strong> bi!</span>
+        </div>
+    <% } %>
+
+    <div class="shop-grid">
+        <% if (urunler && urunler.length > 0) { %>
+            <% urunler.forEach(function(u) { %>
+                <div class="shop-card">
+                    <% if (u.gorsel) { %>
+                        <div class="shop-image">
+                            <img src="<%= u.gorsel %>" alt="<%= u.ad %>">
+                        </div>
+                    <% } else { %>
+                        <div class="shop-image placeholder">
+                            <span>🎁</span>
+                        </div>
+                    <% } %>
+                    <div class="shop-content">
+                        <span class="shop-type"><%= u.tip %></span>
+                        <h3><%= u.ad %></h3>
+                        <% if (u.aciklama) { %>
+                            <p><%= u.aciklama %></p>
+                        <% } %>
+                        <div class="shop-footer">
+                            <div class="shop-price">
+                                <div class="bi-icon">bi!</div>
+                                <span><%= u.fiyat_bi.toLocaleString('tr-TR') %></span>
+                            </div>
+                            <% if (user) { %>
+                                <button class="btn btn-primary <%= user.bi_coin < u.fiyat_bi ? 'disabled' : '' %>"
+                                        <%= user.bi_coin < u.fiyat_bi ? 'disabled' : '' %>>
+                                    Satin Al
+                                </button>
+                            <% } else { %>
+                                <a href="/auth/giris" class="btn btn-primary">Giris Yap</a>
+                            <% } %>
+                        </div>
+                        <% if (u.stok !== -1) { %>
+                            <small class="stock-info">Stok: <%= u.stok %></small>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="empty-state">
+                <div class="empty-icon">🏪</div>
+                <h3>Henuz urun yok</h3>
+                <p>Yakinda yeni urunler eklenecek!</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<style>
+.user-balance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-radius: var(--radius);
+    margin-bottom: 32px;
+    font-size: 1.1rem;
+    color: #92400e;
+}
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.shop-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+}
+
+.shop-card:hover {
+    transform: translateY(-4px);
+}
+
+.shop-image {
+    height: 180px;
+    overflow: hidden;
+}
+
+.shop-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.shop-image.placeholder {
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+}
+
+.shop-content {
+    padding: 20px;
+}
+
+.shop-type {
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--bg-tertiary);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.shop-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.shop-content p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.shop-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.shop-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #92400e;
+}
+
+.stock-info {
+    display: block;
+    margin-top: 12px;
+    color: var(--text-muted);
+}
+
+.btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+</style>

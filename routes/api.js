@@ -241,7 +241,128 @@ router.post('/bildirimler/tumunu-oku', ensureAuthenticatedAPI, async (req, res) 
     }
 });
 
-// Admin: İstatistikler
+// Tahmin Yap (Alternatif endpoint)
+router.post('/tahmin-yap', ensureAuthenticatedAPI, async (req, res) => {
+    try {
+        const kullaniciId = req.user.id;
+        const { tahmin_id, secim } = req.body;
+
+        if (!tahmin_id || !secim || !['evet', 'hayir'].includes(secim.toLowerCase())) {
+            return res.status(400).json({ success: false, message: 'Gecersiz istek' });
+        }
+
+        // Tahmin kontrolu
+        const tahmin = await db.getOne('SELECT * FROM tahminler WHERE id = ? AND durum = "aktif"', [tahmin_id]);
+        if (!tahmin) {
+            return res.status(404).json({ success: false, message: 'Aktif tahmin bulunamadi' });
+        }
+
+        // Daha once tahmin yapilmis mi?
+        const mevcutTahmin = await db.getOne(
+            'SELECT id FROM kullanici_tahminleri WHERE kullanici_id = ? AND tahmin_id = ?',
+            [kullaniciId, tahmin_id]
+        );
+        if (mevcutTahmin) {
+            return res.status(400).json({ success: false, message: 'Bu tahmin icin zaten oy kullandiniz' });
+        }
+
+        // Tahmin yap
+        await db.insert(
+            'INSERT INTO kullanici_tahminleri (kullanici_id, tahmin_id, secim) VALUES (?, ?, ?)',
+            [kullaniciId, tahmin_id, secim.toLowerCase()]
+        );
+
+        // Katilim sayisini guncelle
+        await db.execute('UPDATE tahminler SET katilim_sayisi = katilim_sayisi + 1 WHERE id = ?', [tahmin_id]);
+
+        // Kullanicinin toplam tahminini guncelle
+        await db.execute('UPDATE kullanicilar SET toplam_tahmin = toplam_tahmin + 1 WHERE id = ?', [kullaniciId]);
+
+        // Oranlari guncelle
+        const oranlar = await db.getOne(`
+            SELECT
+                COUNT(CASE WHEN secim = 'evet' THEN 1 END) as evet_count,
+                COUNT(CASE WHEN secim = 'hayir' THEN 1 END) as hayir_count,
+                COUNT(*) as total
+            FROM kullanici_tahminleri
+            WHERE tahmin_id = ?
+        `, [tahmin_id]);
+
+        const evetOrani = ((oranlar.evet_count / oranlar.total) * 100).toFixed(2);
+        const hayirOrani = ((oranlar.hayir_count / oranlar.total) * 100).toFixed(2);
+
+        await db.execute(
+            'UPDATE tahminler SET evet_orani = ?, hayir_orani = ? WHERE id = ?',
+            [evetOrani, hayirOrani, tahmin_id]
+        );
+
+        // Socket.io ile canli guncelleme
+        if (global.emitPredictionUpdate) {
+            global.emitPredictionUpdate({
+                tahmin_id: tahmin_id,
+                evet_orani: parseFloat(evetOrani),
+                hayir_orani: parseFloat(hayirOrani),
+                katilim_sayisi: oranlar.total
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Tahmininiz kaydedildi',
+            data: {
+                evet_orani: parseFloat(evetOrani),
+                hayir_orani: parseFloat(hayirOrani),
+                katilim_sayisi: oranlar.total
+            }
+        });
+    } catch (err) {
+        console.error('API tahmin yap hatasi:', err);
+        res.status(500).json({ success: false, message: 'Bir hata olustu' });
+    }
+});
+
+// Bi Coin Guncelle (Admin)
+router.post('/admin/bicoin-guncelle', ensureAdminAPI, async (req, res) => {
+    try {
+        const { kullanici_id, miktar, tip, aciklama } = req.body;
+
+        // Kullanici kontrolu
+        const kullanici = await db.getOne('SELECT bi_coin FROM kullanicilar WHERE id = ?', [kullanici_id]);
+        if (!kullanici) {
+            return res.status(404).json({ success: false, message: 'Kullanici bulunamadi' });
+        }
+
+        let yeniBakiye = kullanici.bi_coin;
+        if (tip === 'ekle') {
+            yeniBakiye += parseInt(miktar);
+        } else if (tip === 'cikar') {
+            yeniBakiye -= parseInt(miktar);
+            if (yeniBakiye < 0) yeniBakiye = 0;
+        } else {
+            yeniBakiye = parseInt(miktar);
+        }
+
+        await db.execute('UPDATE kullanicilar SET bi_coin = ? WHERE id = ?', [yeniBakiye, kullanici_id]);
+
+        // Islem kaydi
+        await db.insert(`
+            INSERT INTO bi_islemleri (kullanici_id, miktar, tip, aciklama, bakiye_sonrasi)
+            VALUES (?, ?, ?, ?, ?)
+        `, [kullanici_id, miktar, tip === 'ekle' ? 'bonus' : 'harcama', aciklama || 'Admin islemi', yeniBakiye]);
+
+        // Socket.io ile canli guncelleme
+        if (global.emitBiCoinUpdate) {
+            global.emitBiCoinUpdate(kullanici_id, yeniBakiye);
+        }
+
+        res.json({ success: true, message: 'Bakiye guncellendi', yeni_bakiye: yeniBakiye });
+    } catch (err) {
+        console.error('Bi coin guncelleme hatasi:', err);
+        res.status(500).json({ success: false, message: 'Bir hata olustu' });
+    }
+});
+
+// Admin: Istatistikler
 router.get('/admin/istatistikler', ensureAdminAPI, async (req, res) => {
     try {
         const stats = {};

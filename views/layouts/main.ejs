@@ -32,6 +32,81 @@
 
     <%- include('../partials/footer') %>
 
+    <script src="/socket.io/socket.io.js"></script>
     <script src="/js/main.js"></script>
+    <% if (user) { %>
+    <script>
+        // Socket.io bağlantısı
+        const socket = io({
+            transports: ['websocket', 'polling']
+        });
+
+        // Kullanıcı ID
+        const userId = <%= user.id %>;
+
+        socket.on('connect', () => {
+            console.log('Socket.io bağlandı');
+            socket.emit('join-user', userId);
+            socket.emit('subscribe-bicoin', userId);
+            socket.emit('subscribe-predictions');
+            socket.emit('subscribe-leaderboard');
+        });
+
+        // Bi! Coin güncelleme
+        socket.on('bicoin-update', (data) => {
+            const biCoinEl = document.getElementById('bi-coin-value');
+            if (biCoinEl && data.bi_coin !== undefined) {
+                biCoinEl.textContent = parseInt(data.bi_coin).toLocaleString('tr-TR');
+                biCoinEl.classList.add('bicoin-updated');
+                setTimeout(() => biCoinEl.classList.remove('bicoin-updated'), 500);
+            }
+        });
+
+        // Bildirim güncelleme
+        socket.on('notification', (data) => {
+            const notifDot = document.getElementById('notification-dot');
+            if (notifDot) {
+                notifDot.style.display = 'block';
+            }
+            if (data.message) {
+                showNotification(data.message, data.type || 'info');
+            }
+        });
+
+        // Tahmin güncelleme
+        socket.on('prediction-update', (data) => {
+            if (typeof updatePredictionUI === 'function') {
+                updatePredictionUI(data);
+            }
+        });
+
+        // Sıralama güncelleme
+        socket.on('leaderboard-update', () => {
+            if (typeof refreshLeaderboard === 'function') {
+                refreshLeaderboard();
+            }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket.io bağlantısı kesildi');
+        });
+
+        socket.on('connect_error', (error) => {
+            console.log('Socket.io bağlantı hatası, polling kullanılıyor');
+        });
+
+        // Bildirim gösterme fonksiyonu
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `toast-notification toast-${type}`;
+            notification.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()">&times;</button>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+    </script>
+    <% } %>
 </body>
 </html>

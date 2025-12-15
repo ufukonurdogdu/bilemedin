@@ -1,0 +1,119 @@
+<div class="admin-page">
+    <div class="page-actions">
+        <button onclick="showAddModal()" class="btn btn-primary">+ Yeni Urun</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Gorsel</th>
+                            <th>Ad</th>
+                            <th>Tip</th>
+                            <th>Fiyat</th>
+                            <th>Stok</th>
+                            <th>Durum</th>
+                            <th>Islem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (urunler && urunler.length > 0) { %>
+                            <% urunler.forEach(function(u) { %>
+                                <tr>
+                                    <td><%= u.id %></td>
+                                    <td>
+                                        <% if (u.gorsel) { %>
+                                            <img src="<%= u.gorsel %>" alt="<%= u.ad %>" class="product-thumb">
+                                        <% } else { %>
+                                            <div class="product-thumb-placeholder">-</div>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <strong><%= u.ad %></strong>
+                                        <% if (u.aciklama) { %>
+                                            <br><small class="text-muted"><%= u.aciklama.substring(0, 50) %>...</small>
+                                        <% } %>
+                                    </td>
+                                    <td><span class="badge"><%= u.tip %></span></td>
+                                    <td class="bi-coin"><%= u.fiyat_bi %> bi!</td>
+                                    <td><%= u.stok === -1 ? 'Sinirsiz' : u.stok %></td>
+                                    <td>
+                                        <span class="status-badge <%= u.aktif_mi ? 'active' : 'inactive' %>">
+                                            <%= u.aktif_mi ? 'Aktif' : 'Pasif' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form action="/admin/magaza/<%= u.id %>/sil" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu urunu silmek istediginize emin misiniz?')">Sil</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="8" class="text-center">Urun bulunamadi</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Urun Modal -->
+<div id="urunModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Yeni Urun</h3>
+        <form action="/admin/magaza/yeni" method="POST">
+            <div class="form-group">
+                <label>Urun Adi</label>
+                <input type="text" name="ad" required>
+            </div>
+            <div class="form-group">
+                <label>Aciklama</label>
+                <textarea name="aciklama" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Gorsel URL</label>
+                <input type="text" name="gorsel" placeholder="https://...">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tip</label>
+                    <select name="tip" required>
+                        <option value="dijital">Dijital</option>
+                        <option value="fiziksel">Fiziksel</option>
+                        <option value="cekilis">Cekilis</option>
+                        <option value="premium">Premium</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fiyat (bi!)</label>
+                    <input type="number" name="fiyat_bi" required>
+                </div>
+                <div class="form-group">
+                    <label>Stok (-1: Sinirsiz)</label>
+                    <input type="number" name="stok" value="-1">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">Iptal</button>
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAddModal() {
+    document.getElementById('urunModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('urunModal').style.display = 'none';
+}
+</script>

@@ -1,0 +1,194 @@
+<div class="admin-page">
+    <div class="page-header">
+        <h2>Istatistikler</h2>
+    </div>
+
+    <!-- Genel Istatistikler -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.toplamKullanici.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Toplam Kullanici</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🟢</div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.aktifKullanici.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Aktif Kullanici (7 gun)</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.toplamTahmin.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Toplam Tahmin</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.aktifTahmin.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Aktif Tahmin</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🗳️</div>
+            <div class="stat-info">
+                <div class="stat-value"><%= stats.toplamKatilim.toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Toplam Katilim</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <div class="stat-value"><%= (stats.toplamBiCoin || 0).toLocaleString('tr-TR') %></div>
+                <div class="stat-label">Toplam bi! Coin</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <!-- Son 7 Gunluk Kayitlar -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Son 7 Gunluk Kayitlar</h3>
+            </div>
+            <div class="card-body">
+                <% if (kayitlar && kayitlar.length > 0) { %>
+                    <div class="simple-chart">
+                        <% kayitlar.forEach(function(k) { %>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: <%= Math.min(k.sayi * 10, 100) %>%"></div>
+                                <div class="bar-label"><%= k.sayi %></div>
+                                <div class="bar-date"><%= new Date(k.tarih).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) %></div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <p class="text-center text-muted">Veri bulunamadi</p>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Kategori Dagilimi -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Kategori Dagilimi</h3>
+            </div>
+            <div class="card-body">
+                <% if (kategoriDagilimi && kategoriDagilimi.length > 0) { %>
+                    <div class="distribution-list">
+                        <% kategoriDagilimi.forEach(function(k) { %>
+                            <div class="distribution-item">
+                                <span class="dist-label"><%= k.ad %></span>
+                                <span class="dist-value"><%= k.tahmin_sayisi %> tahmin</span>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <p class="text-center text-muted">Veri bulunamadi</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+}
+
+.simple-chart {
+    display: flex;
+    gap: 12px;
+    height: 150px;
+    align-items: flex-end;
+    padding-bottom: 40px;
+    position: relative;
+}
+
+.chart-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.bar-fill {
+    width: 100%;
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+}
+
+.bar-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.bar-date {
+    position: absolute;
+    bottom: -30px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.distribution-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.distribution-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+
+.dist-label {
+    font-weight: 500;
+}
+
+.dist-value {
+    color: var(--text-secondary);
+}
+</style>

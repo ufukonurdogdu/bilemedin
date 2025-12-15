@@ -7,7 +7,11 @@
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
-  "keywords": ["tahmin", "prediction", "game"],
+  "keywords": [
+    "tahmin",
+    "prediction",
+    "game"
+  ],
   "author": "Bilemezsin Team",
   "license": "ISC",
   "dependencies": {
@@ -23,7 +27,8 @@
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

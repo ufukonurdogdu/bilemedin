@@ -1,0 +1,86 @@
+<div class="admin-page">
+    <div class="page-header">
+        <h2>Bildirim Yonetimi</h2>
+    </div>
+
+    <!-- Toplu Bildirim Gonder -->
+    <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h3>Toplu Bildirim Gonder</h3>
+        </div>
+        <div class="card-body">
+            <form action="/admin/bildirimler/gonder" method="POST">
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label>Baslik</label>
+                        <input type="text" name="baslik" required placeholder="Bildirim basligi">
+                    </div>
+                    <div class="form-group">
+                        <label>Tip</label>
+                        <select name="tip">
+                            <option value="sistem">Sistem</option>
+                            <option value="odul">Odul</option>
+                            <option value="tahmin">Tahmin</option>
+                            <option value="sosyal">Sosyal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mesaj</label>
+                    <textarea name="mesaj" rows="3" placeholder="Bildirim icerigi"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Tum Kullanicilara Gonder</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Son Bildirimler -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Son Bildirimler</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Kullanici</th>
+                            <th>Baslik</th>
+                            <th>Tip</th>
+                            <th>Okundu</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (bildirimler && bildirimler.length > 0) { %>
+                            <% bildirimler.forEach(function(b) { %>
+                                <tr>
+                                    <td><%= b.id %></td>
+                                    <td><%= b.kullanici_adi || 'Bilinmiyor' %></td>
+                                    <td>
+                                        <strong><%= b.baslik %></strong>
+                                        <% if (b.mesaj) { %>
+                                            <br><small class="text-muted"><%= b.mesaj.substring(0, 50) %></small>
+                                        <% } %>
+                                    </td>
+                                    <td><span class="badge badge-<%= b.tip %>"><%= b.tip %></span></td>
+                                    <td>
+                                        <span class="status-badge <%= b.okundu_mu ? 'active' : 'inactive' %>">
+                                            <%= b.okundu_mu ? 'Okundu' : 'Okunmadi' %>
+                                        </span>
+                                    </td>
+                                    <td><%= new Date(b.olusturma_tarihi).toLocaleDateString('tr-TR') %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="text-center">Bildirim bulunamadi</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

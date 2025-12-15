@@ -1,0 +1,120 @@
+<div class="admin-page">
+    <div class="page-actions">
+        <button onclick="showAddModal()" class="btn btn-primary">+ Yeni Gorev</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ad</th>
+                            <th>Tip</th>
+                            <th>Kosul</th>
+                            <th>bi! Odul</th>
+                            <th>XP Odul</th>
+                            <th>Durum</th>
+                            <th>Islem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (gorevler && gorevler.length > 0) { %>
+                            <% gorevler.forEach(function(g) { %>
+                                <tr>
+                                    <td><%= g.id %></td>
+                                    <td>
+                                        <strong><%= g.ad %></strong>
+                                        <% if (g.aciklama) { %>
+                                            <br><small class="text-muted"><%= g.aciklama %></small>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-<%= g.tip %>"><%= g.tip %></span>
+                                    </td>
+                                    <td><%= g.kosul_tip %>: <%= g.kosul_deger %></td>
+                                    <td class="bi-coin"><%= g.bi_odul %> bi!</td>
+                                    <td><%= g.xp_odul %> XP</td>
+                                    <td>
+                                        <span class="status-badge <%= g.aktif_mi ? 'active' : 'inactive' %>">
+                                            <%= g.aktif_mi ? 'Aktif' : 'Pasif' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form action="/admin/gorevler/<%= g.id %>/sil" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu gorevi silmek istediginize emin misiniz?')">Sil</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="8" class="text-center">Gorev bulunamadi</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gorev Modal -->
+<div id="gorevModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Yeni Gorev</h3>
+        <form action="/admin/gorevler/yeni" method="POST">
+            <div class="form-group">
+                <label>Gorev Adi</label>
+                <input type="text" name="ad" required>
+            </div>
+            <div class="form-group">
+                <label>Aciklama</label>
+                <textarea name="aciklama" rows="2"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tip</label>
+                    <select name="tip" required>
+                        <option value="gunluk">Gunluk</option>
+                        <option value="haftalik">Haftalik</option>
+                        <option value="ozel">Ozel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kosul Tipi</label>
+                    <input type="text" name="kosul_tip" placeholder="gunluk_tahmin">
+                </div>
+                <div class="form-group">
+                    <label>Kosul Degeri</label>
+                    <input type="number" name="kosul_deger" value="5">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>bi! Odul</label>
+                    <input type="number" name="bi_odul" value="100">
+                </div>
+                <div class="form-group">
+                    <label>XP Odul</label>
+                    <input type="number" name="xp_odul" value="50">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">Iptal</button>
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAddModal() {
+    document.getElementById('gorevModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('gorevModal').style.display = 'none';
+}
+</script>

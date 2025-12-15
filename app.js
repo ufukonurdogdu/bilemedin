@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const session = require('express-session');
 const passport = require('passport');
 const flash = require('connect-flash');
@@ -13,6 +15,21 @@ const db = require('./config/database');
 require('./config/passport')(passport);
 
 const app = express();
+const server = http.createServer(app);
+
+// Socket.io Setup
+const io = new Server(server, {
+    cors: {
+        origin: process.env.BASE_URL || 'http://localhost:3000',
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true
+});
+
+// Make io accessible to routes
+app.set('io', io);
 
 // EJS Setup
 app.use(expressLayouts);
@@ -27,8 +44,8 @@ app.use(express.json());
 // Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session
-app.use(session({
+// Session middleware
+const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -36,7 +53,9 @@ app.use(session({
         secure: process.env.NODE_ENV === 'production',
         maxAge: 24 * 60 * 60 * 1000
     }
-}));
+});
+
+app.use(sessionMiddleware);
 
 // Passport Middleware
 app.use(passport.initialize());
@@ -64,7 +83,7 @@ app.use('/api', require('./routes/api'));
 
 // 404 Handler
 app.use((req, res) => {
-    res.status(404).render('errors/404', { 
+    res.status(404).render('errors/404', {
         title: 'Sayfa Bulunamadı',
         layout: 'layouts/main'
     });
@@ -73,11 +92,64 @@ app.use((req, res) => {
 // Error Handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).render('errors/500', { 
+    res.status(500).render('errors/500', {
         title: 'Sunucu Hatası',
         layout: 'layouts/main'
     });
 });
+
+// Socket.io Connection Handler
+io.on('connection', (socket) => {
+    console.log('🔌 Kullanıcı bağlandı:', socket.id);
+
+    // Kullanıcı odasına katılma
+    socket.on('join-user', (userId) => {
+        if (userId) {
+            socket.join(`user-${userId}`);
+            console.log(`👤 Kullanıcı ${userId} odasına katıldı`);
+        }
+    });
+
+    // Bi! Coin güncelleme dinleyicisi
+    socket.on('subscribe-bicoin', (userId) => {
+        if (userId) {
+            socket.join(`bicoin-${userId}`);
+        }
+    });
+
+    // Tahmin güncellemeleri için oda
+    socket.on('subscribe-predictions', () => {
+        socket.join('predictions');
+    });
+
+    // Sıralama güncellemeleri için oda
+    socket.on('subscribe-leaderboard', () => {
+        socket.join('leaderboard');
+    });
+
+    // Bağlantı kopması
+    socket.on('disconnect', () => {
+        console.log('🔌 Kullanıcı ayrıldı:', socket.id);
+    });
+});
+
+// Global socket emit fonksiyonu
+global.emitBiCoinUpdate = (userId, newBalance) => {
+    io.to(`user-${userId}`).emit('bicoin-update', { bi_coin: newBalance });
+    io.to(`bicoin-${userId}`).emit('bicoin-update', { bi_coin: newBalance });
+};
+
+global.emitPredictionUpdate = (predictionData) => {
+    io.to('predictions').emit('prediction-update', predictionData);
+};
+
+global.emitLeaderboardUpdate = () => {
+    io.to('leaderboard').emit('leaderboard-update');
+};
+
+global.emitNotification = (userId, notification) => {
+    io.to(`user-${userId}`).emit('notification', notification);
+};
 
 const PORT = process.env.PORT || 3000;
 
@@ -86,9 +158,10 @@ const initializeApp = async () => {
     try {
         await db.createTables();
         console.log('✅ Veritabanı tabloları hazır');
-        
-        app.listen(PORT, () => {
+
+        server.listen(PORT, () => {
             console.log(`🚀 Sunucu ${PORT} portunda çalışıyor`);
+            console.log(`🔌 Socket.io aktif`);
             console.log(`🌐 ${process.env.BASE_URL}`);
         });
     } catch (err) {
@@ -99,4 +172,4 @@ const initializeApp = async () => {
 
 initializeApp();
 
-module.exports = app;
+module.exports = { app, io };

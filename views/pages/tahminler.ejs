@@ -1,0 +1,132 @@
+<div class="page-container" style="max-width: 1200px;">
+    <div class="page-header-section">
+        <h1>Tahminler</h1>
+        <p>Tahmin yap, dogru bil, bi! kazan!</p>
+    </div>
+
+    <!-- Kategoriler -->
+    <div class="categories-filter">
+        <a href="/tahminler" class="category-filter <%= !seciliKategori ? 'active' : '' %>">
+            Tumu
+        </a>
+        <% kategoriler.forEach(function(k) { %>
+            <a href="/tahminler?kategori=<%= k.id %>"
+               class="category-filter <%= seciliKategori == k.id ? 'active' : '' %>"
+               style="--cat-color: <%= k.renk %>">
+                <span><%= k.ikon %></span>
+                <%= k.ad %>
+            </a>
+        <% }); %>
+    </div>
+
+    <!-- Tahminler Grid -->
+    <div class="predictions-grid">
+        <% if (tahminler && tahminler.length > 0) { %>
+            <% tahminler.forEach(function(t) { %>
+                <div class="prediction-card">
+                    <% if (t.gorsel) { %>
+                        <div class="prediction-image">
+                            <img src="<%= t.gorsel %>" alt="<%= t.baslik %>">
+                            <span class="category-badge" style="background: <%= t.kategori_renk %>">
+                                <%= t.kategori_ikon %> <%= t.kategori_adi %>
+                            </span>
+                        </div>
+                    <% } %>
+                    <div class="prediction-content">
+                        <h3 class="prediction-title"><%= t.baslik %></h3>
+
+                        <div class="prediction-odds">
+                            <div class="odds-bar">
+                                <div class="odds-yes" style="width: <%= t.evet_orani %>%"></div>
+                                <div class="odds-no" style="width: <%= t.hayir_orani %>%"></div>
+                            </div>
+                            <div class="odds-labels">
+                                <span class="yes-label">Evet %<%= t.evet_orani %></span>
+                                <span class="no-label">Hayir %<%= t.hayir_orani %></span>
+                            </div>
+                        </div>
+
+                        <div class="prediction-footer">
+                            <span>⏰ <%= new Date(t.bitis_tarihi).toLocaleDateString('tr-TR') %></span>
+                            <span class="reward">🏆 <%= t.bi_odul %> bi!</span>
+                        </div>
+
+                        <% if (user) { %>
+                            <div class="prediction-actions">
+                                <button class="btn btn-yes" onclick="tahminYap(<%= t.id %>, 'evet')">EVET</button>
+                                <button class="btn btn-no" onclick="tahminYap(<%= t.id %>, 'hayir')">HAYIR</button>
+                            </div>
+                        <% } else { %>
+                            <a href="/auth/giris" class="btn btn-primary btn-block">Tahmin yapmak icin giris yap</a>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-icon">📊</div>
+                <h3>Tahmin bulunamadi</h3>
+                <p>Bu kategoride henuz aktif tahmin yok.</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<style>
+.categories-filter {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.category-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.category-filter:hover,
+.category-filter.active {
+    border-color: var(--cat-color, var(--primary));
+    color: var(--cat-color, var(--primary));
+}
+
+.category-filter.active {
+    background: var(--cat-color, var(--primary));
+    color: white;
+}
+</style>
+
+<script>
+async function tahminYap(tahminId, secim) {
+    try {
+        const response = await fetch('/api/tahmin-yap', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tahmin_id: tahminId, secim: secim })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showNotification('Tahmininiz kaydedildi!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification(data.message || 'Bir hata olustu', 'error');
+        }
+    } catch (err) {
+        showNotification('Bir hata olustu', 'error');
+    }
+}
+</script>
